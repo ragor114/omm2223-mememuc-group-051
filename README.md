@@ -31,6 +31,8 @@ cd react-frontend && npm start
 
 For us the in-memory mongoserver didn't work, so make sure a mongod instance is running on your computer!
 
+**Attention:** *As explained in a previous exercise session the in-memory database did not work on any of our computers. Following your instructions in the exercise, we, therefore, only tested our project with the "real" mongoDB database.*
+
 ### Requirements for our project:
 
 - [Nodejs](https://nodejs.org/en/download/)
