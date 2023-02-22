@@ -3,6 +3,7 @@ import { Component } from 'react';
 import Fab from '@mui/material/Fab';
 import SaveIcon from '@mui/icons-material/Save';
 import SaveAltIcon from '@mui/icons-material/SaveAlt';
+import ArchiveIcon from '@mui/icons-material/Archive';
 import FileUploadIcon from '@mui/icons-material/FileUpload';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
 import EditIcon from '@mui/icons-material/Edit';
@@ -81,12 +82,26 @@ class Editor extends Component {
         console.log(this.props.receivedMemeData);
         console.log("Text1: "+ this.state.text1);
         console.log("xPos: " + this.state.xPosT1);
-        if(prevProps.receivedMemeData.uid !== this.props.receivedMemeData.uid) {
+
+        if(prevProps.receivedMemeData=== undefined){
+            this.handleMemeEditClicked(this.props.receivedMemeData);
+        }
+        else if (prevProps.receivedMemeData.uid === undefined) {
+            prevProps.receivedMemeData.uid = -1;
             console.log("Call CLicked");
             console.log("receivedMemeData: ");
             console.log(this.props.receivedMemeData);
             this.handleMemeEditClicked(this.props.receivedMemeData);
         }
+        else if(this.props.receivedMemeData !== undefined){
+            if(prevProps.receivedMemeData.uid !== this.props.receivedMemeData.uid) {
+                console.log("Call CLicked");
+                console.log("receivedMemeData: ");
+                console.log(this.props.receivedMemeData);
+                this.handleMemeEditClicked(this.props.receivedMemeData);
+            }
+        }
+        
         else if(this.state.oldStateHistory !== this.props.updateSetIsHistory){
             console.log("Seiten Wechsel");
             this.handleMemeEditClicked(null);
@@ -94,6 +109,7 @@ class Editor extends Component {
         /*else if(prevProps.receivedMemeData === this.props.receivedMemeData) {
             console.log("Fucking shit");
         }*/
+        
     }
 
 
@@ -103,7 +119,7 @@ class Editor extends Component {
         this.setState({ hasImage: true });
     }
 
-    saveMeme = () => {
+    saveMeme = (endpoint) => {
         var image = this.state.image;
         var imgWidth = this.state.imageWidth;
         var imgHeight = this.state.imageHeight;
@@ -127,7 +143,7 @@ class Editor extends Component {
             title: document.getElementById("titleInput").value,
         }
         console.log(memeData);
-        fetch("http://localhost:3001/createdMemes/insert", {
+        fetch("http://localhost:3001/createdMemes/" + endpoint, {
             headers: {
                 'Access-Control-Allow-Origin': '*',
                 "Content-Type": "application/json"
@@ -143,6 +159,7 @@ class Editor extends Component {
         //console.log(memeData);
     }
 
+    // vgl. https://stackoverflow.com/questions/57056741/how-to-download-image-in-reactjs
     downloadMeme = () => {
         var title = document.getElementById("titleInput");
         var mergeCanvas = document.getElementById("mergingCanvas");
@@ -167,8 +184,8 @@ class Editor extends Component {
     }
 
     handleTextInfo(textNr, xPos, yPos, bold, italic, color, text) {
-        console.log("Text data: ");
-        console.log(textNr + " " + text + " " + xPos + " " + yPos + " " + bold + " " + italic + " " + color);
+        //console.log("Text data: ");
+        //console.log(textNr + " " + text + " " + xPos + " " + yPos + " " + bold + " " + italic + " " + color);
         
         if (textNr === "Text 1") {
             this.state.text1 = text;
@@ -206,9 +223,10 @@ class Editor extends Component {
     }
 
     handleMemeEditClicked(memeData){
-            console.log("edit clicked");
-            //console.log(memeData);
-            if(memeData === null){
+        console.log("edit clicked");
+        console.log("Received MemeData");
+        if(memeData !== undefined){
+            if(memeData === null ){
                 console.log("setting states default");
                 this.state.imageFile = "";
                 this.state.image = "";
@@ -231,7 +249,12 @@ class Editor extends Component {
                     title: "",
                 }
             }else{
-                this.state.imageFile = memeData.base64Image;
+                console.log("in create meme else");
+                if(memeData.base64Image === undefined){
+                    this.state.imageFile = memeData.image;
+                }else{
+                    this.state.imageFile = memeData.base64Image;
+                }
                 if(this.props.updateSetIsHistory === false){
                     memeData.text1 = this.state.text1;
                     memeData.text1XPos = this.state.xPosT1;
@@ -248,12 +271,13 @@ class Editor extends Component {
                 }
                 
             }
-            //console.log(memeData);
+            console.log(memeData);
             this.state.memeToEdit = memeData;
             this.state.imageOption = "editMeme";
             this.state.oldStateHistory = this.props.updateSetIsHistory;
             this.setState({ hasImage: true });
         
+        }
     }
 
     render() {
@@ -307,8 +331,11 @@ class EditorTopMenu extends Component {
                 <Fab className="upperBtn" id="btn2" variant="extended" size="medium" color="primary" onClick={this.props.downloadMeme}>
                     <SaveAltIcon />
                 </Fab>
-                <Fab className="upperBtn" id="btnSave" variant="extended" size="large" color="primary" onClick={this.props.saveMeme}>
+                <Fab className="upperBtn" id="btnSave" variant="extended" size="large" color="primary" onClick={() => { this.props.saveMeme('insert')}} >
                     <SaveIcon />
+                </Fab>
+                <Fab className="upperBtn" id="btnDraft" variant="extended" size="large" color="primary" onClick={() => { this.props.saveMeme('insert-draft')}}>
+                    <ArchiveIcon />
                 </Fab>
             </div>
         );

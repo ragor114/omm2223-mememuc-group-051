@@ -9,7 +9,7 @@ const cors = require('cors');
 // ### Your backend project has to switch the MongoDB port like this
 // ### Thus copy paste this block to your project
 const MONGODB_PORT = process.env.DBPORT || '27017';
-const db = require('monk')(`127.0.0.1:${MONGODB_PORT}/omm-2223`); // connect to database omm-2021
+const db = require('monk')(`127.0.0.1:${MONGODB_PORT}/omm-ws2223`); // connect to database omm-2021
 console.log(`Connected to MongoDB at port ${MONGODB_PORT}`)
 // ######
 
@@ -60,6 +60,13 @@ app.use(cors({
   credentials: true,
 }
 ));
+
+app.use(function(req, res, next) {
+    const nonSecurePaths = ['/', '/users', '/users/auth', '/users/insert', '/users/loggedin'];
+    if (nonSecurePaths.includes(req.path)) return next();
+    if (req.session.loggedin) return next();
+    res.status(401).send();
+});
 
 app.use(function(req,res,next){
   req.db = db;
